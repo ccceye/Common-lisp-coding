@@ -122,7 +122,6 @@
 (setq display-time-day-and-date t) 
 ;;----------------------    END    time setting    ---------------------
 
-
 ;;-------------------设置lisp工作环境---------------------
 (split-window-below)
 (other-window 1)
