@@ -116,4 +116,9 @@ foo
   
 ## 函数的表示
 
+接着我们定义一个记号来描述函数.函数表示为(lambda (p<sub>1</sub>...p<sub>n</sub>) e),其中 p<sub>1</sub>...p<sub>n</sub>是原子(叫做参数),e是表达式. 如果表达式的第一个元素形式如上
+
+`((lambda (p<sub>1</sub>...p<sub>n</sub>) e) a<sub>1</sub>...a<sub>1</sub>)`
+
+
 
