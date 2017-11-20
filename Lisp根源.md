@@ -195,6 +195,237 @@ foo
 
 ## 一些函数
 
+既然我们有了表示函数的方法,我们根据七个原始操作符来定义一些新的函数. 为了方便我们引进一些常见模式的简记法. 我们用cxr,其中x是a或d的序列,来 简记相应的car和cdr的组合. 比如(cadr e)是(car (cdr e))的简记,它返回e的 第二个元素.
+
+```
+> (cadr '((a b) (c d) e))
+(c d)
+> (caddr '((a b) (c d) e))
+e
+> (cdar '((a b) (c d) e))
+(b)
+```
+
+我们还用(list e<sub>1</sub>...e<sub>n</sub>)表示(cons e<sub>1</sub>...(cons e<sub>n</sub>'()) ...).
+
+```
+> (cons 'a (cons 'b (cons 'c '())))
+(a b c)
+> (list 'a 'b 'c)
+(a b c)
+```
+
+现在我们定义一些新函数. 我在函数名后面加了点,以区别函数和定义它们的原 始函数,也避免与现存的common Lisp的函数冲突.
+
+1. (null. x)测试它的自变量是否是空表.
+
+```
+(defun null. (x)
+  (eq x '()))
+
+> (null. 'a)
+()
+> (null. '())
+t
+```
+
+2. (and. x y)返回t如果它的两个自变量都是t, 否则返回().
+
+```
+(defun and. (x y)
+  (cond (x (cond (y 't) ('t '())))
+        ('t '())))
+
+> (and. (atom 'a) (eq 'a 'a))
+t
+> (and. (atom 'a) (eq 'a 'b))
+()
+```
+
+3. (not. x)返回t如果它的自变量返回(),返回()如果它的自变量返回t.
+
+```
+(defun not. (x)
+  (cond (x '())
+        ('t 't)))
+
+> (not. (eq 'a 'a))
+()
+> (not. (eq 'a 'b))
+t
+```
+4. (append. x y)取两个表并返回它们的连结.
+
+```
+(defun append. (x y)
+   (cond ((null. x) y)
+         ('t (cons (car x) (append. (cdr x) y)))))
+
+> (append. '(a b) '(c d))
+(a b c d)
+> (append. '() '(c d))
+(c d)
+```
+
+5. (pair. x y)取两个相同长度的表,返回一个由双元素表构成的表,双元素表是相 应位置的x,y的元素对.
+
+```
+(defun pair. (x y)
+  (cond ((and. (null. x) (null. y)) '())
+        ((and. (not. (atom x)) (not. (atom y)))
+         (cons (list (car x) (car y))
+               (pair. (cdr) (cdr y))))))
+
+> (pair. '(x y z) '(a b c))
+((x a) (y b) (z c))
+```
+
+6. (assoc. x y)取原子x和形如pair.函数所返回的表y,返回y中第一个符合如下条 件的表的第二个元素:它的第一个元素是x.
+
+```
+(defun assoc. (x y)
+  (cond ((eq (caar y) x) (cadar y))
+        ('t (assoc. x (cdr y)))))
+
+> (assoc. 'x '((x a) (y b)))
+a
+> (assoc. 'x '((x new) (x a) (y b)))
+new
+```
+
+## 一个惊喜
+
+因此我们能够定义函数来连接表,替换表达式等等.也许算是一个优美的表示法, 那下一步呢? 现在惊喜来了. 我们可以写一个函数作为我们语言的解释器:此函 数取任意Lisp表达式作自变量并返回它的值. 如下所示:
+
+```
+(defun eval. (e a)
+  (cond 
+    ((atom e) (assoc. e a))
+    ((atom (car e))
+     (cond 
+       ((eq (car e) 'quote) (cadr e))
+       ((eq (car e) 'atom)  (atom   (eval. (cadr e) a)))
+       ((eq (car e) 'eq)    (eq     (eval. (cadr e) a)
+                                    (eval. (caddr e) a)))
+       ((eq (car e) 'car)   (car    (eval. (cadr e) a)))
+       ((eq (car e) 'cdr)   (cdr    (eval. (cadr e) a)))
+       ((eq (car e) 'cons)  (cons   (eval. (cadr e) a)
+                                    (eval. (caddr e) a)))
+       ((eq (car e) 'cond)  (evcon. (cdr e) a))
+       ('t (eval. (cons (assoc. (car e) a)
+                        (cdr e))
+                  a))))
+    ((eq (caar e) 'label)
+     (eval. (cons (caddar e) (cdr e))
+            (cons (list (cadar e) (car e)) a)))
+    ((eq (caar e) 'lambda)
+     (eval. (caddar e)
+            (append. (pair. (cadar e) (evlis. (cdr  e) a))
+                     a)))))
+
+(defun evcon. (c a)
+  (cond ((eval. (caar c) a)
+         (eval. (cadar c) a))
+        ('t (evcon. (cdr c) a))))
+
+(defun evlis. (m a)
+  (cond ((null. m) '())
+        ('t (cons (eval.  (car m) a)
+                  (evlis. (cdr m) a)))))
+```
+
+eval.的定义比我们以前看到的都要长. 让我们考虑它的每一部分是如何工作的.
+
+eval.有两个自变量: e是要求值的表达式, a是由一些赋给原子的值构成的表,这 些值有点象函数调用中的参数. 这个形如pair.的返回值的表叫做环境. 正是 为了构造和搜索这种表我们才写了pair.和assoc..
+
+eval.的骨架是一个有四个子句的cond表达式. 如何对表达式求值取决于它的类 型. 第一个子句处理原子. 如果e是原子, 我们在环境中寻找它的值:
+
+```
+> (eval. 'x '((x a) (y b)))
+a
+```
+
+第二个子句是另一个cond, 它处理形如(a ...)的表达式, 其中a是原子. 这包 括所有的原始操作符, 每个对应一条子句.
+
+```
+> (eval. '(eq 'a 'a) '())
+t
+> (eval. '(cons x '(b c))
+         '((x a) (y b)))
+(a b c)
+```
+
+这几个子句(除了quote)都调用eval.来寻找自变量的值.
+
+最后两个子句更复杂些. 为了求cond表达式的值我们调用了一个叫 evcon.的辅助函数. 它递归地对cond子句进行求值,寻找第一个元素返回t的子句. 如果找到 了这样的子句, 它返回此子句的第二个元素.
+
+```
+> (eval. '(cond ((atom x) 'atom)
+                ('t 'list))
+         '((x '(a b))))
+list
+```
+
+第二个子句的最后部分处理函数调用. 它把原子替换为它的值(应该是lambda 或label表达式)然后对所得结果表达式求值. 于是
+
+```
+(eval. '(f '(b c))
+       '((f (lambda (x) (cons 'a x)))))
+```
+
+变为
+
+```
+(eval. '((lambda (x) (cons 'a x)) '(b c))
+       '((f (lambda (x) (cons 'a x)))))
+```
+
+它返回(a b c).
+
+eval.的最后cond两个子句处理第一个元素是lambda或label的函数调用.为了对label 表达式求值, 先把函数名和函数本身压入环境, 然后调用eval.对一个内部有 lambda的表达式求值. 即:
+
+```
+(eval. '((label firstatom (lambda (x)
+                            (cond ((atom x) x)
+                                  ('t (firstatom (car x))))))
+         y)
+       '((y ((a b) (c d)))))
+```
+
+变为
+
+```
+(eval. '((lambda (x)
+           (cond ((atom x) x)
+                 ('t (firstatom (car x)))))
+         y)
+        '((firstatom
+           (label firstatom (lambda (x)
+                            (cond ((atom x) x)
+                                  ('t (firstatom (car x)))))))
+          (y ((a b) (c d)))))
+```
+
+最终返回a.
+
+最后,对形如((lambda (p<sub>1</sub>...p<sub>n</sub>) e) a<sub>1</sub>...a<sub>n</sub>)的表达式求值,先调用evlis.来 求得自变量(a<sub>1</sub>...a<sub>n</sub>)对应的值(v<sub>1</sub>...v<sub>n</sub>),把(p<sub>1</sub>v<sub>1</sub>)...(p<sub>n</sub>v<sub>n</sub>)添加到 环境里, 然后对e求值. 于是
+
+```
+(eval. '((lambda (x y) (cons x (cdr y)))
+         'a
+         '(b c d))
+       '())
+```
+
+变为
+
+```
+(eval. '(cons x (cdr y))
+       '((x a) (y (b c d))))
+```
+
+最终返回(a c d).
+
 
 
 
