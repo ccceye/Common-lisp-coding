@@ -118,7 +118,83 @@ foo
 
 接着我们定义一个记号来描述函数.函数表示为(lambda (p<sub>1</sub>...p<sub>n</sub>) e),其中 p<sub>1</sub>...p<sub>n</sub>是原子(叫做参数),e是表达式. 如果表达式的第一个元素形式如上
 
-`((lambda (p<sub>1</sub>...p<sub>n</sub>) e) a<sub>1</sub>...a<sub>1</sub>)`
+((lambda (p<sub>1</sub>...p<sub>n</sub>) e) a<sub>1</sub>...a<sub>1</sub>)
+
+则称为函数调用.它的值计算如下.每一个表达式$a_{i}$先求值,然后e再求值.在e的 求值过程中,每个出现在e中的$p_{i}$的值是相应的$a_{i}$在最近一 次的函数调用中的值.
+
+```
+> ((lambda (x) (cons x '(b))) 'a)
+(a b)
+> ((lambda (x y) (cons x (cdr y)))
+   'z
+   '(a b c))
+(z b c)
+```
+如果一个表达式的第一个元素f是原子且f不是原始操作符
+
+(f a<sub>1</sub>...a<sub>n</sub>)
+
+并且f的值是一个函数(lambda (p<sub>1</sub>...p<sub>n</sub>)),则以上表达式的值就是
+
+((lambda (p<sub>1</sub>...p<sub>n</sub>) e) a<sub>1</sub>...a<sub>n</sub>)
+
+的值. 换句话说,参数在表达式中不但可以作为自变量也可以作为操作符使用:
+
+```
+> ((lambda (f) (f '(b c)))
+   '(lambda (x) (cons 'a x)))
+(a b c)
+```
+
+有另外一个函数记号使得函数能提及它本身,这样我们就能方便地定义递归函数.
+
+(label f (lambda (p<sub>1</sub>...p<sub>n</sub>) e))
+
+表示一个象(lambda (p<sub>1</sub>...p<sub>n</sub>) e)那样的函数,加上这样的特性: 任何出现在e中的f将求值为此label表达式, 就好象f是此函数的参数.
+
+设我们要定义函数(subst x y z), 它取表达式x,原子y和表z做参数,返回一个 象z那样的表, 不过z中出现的y(在任何嵌套层次上)被x代替.
+
+```
+> (subst 'm 'b '(a b (a b c) d))
+(a m (a m c) d)
+```
+
+我们可以这样表示此函数
+
+```
+(label subst (lambda (x y z)
+               (cond ((atom z)
+                      (cond ((eq z y) x)
+                            ('t z)))
+                     ('t (cons (subst x y (car z))
+                               (subst x y (cdr z)))))))
+```
+
+我们简记f=(label f (lambda (p<sub>1</sub>...p<sub>n</sub>) e))为
+
+(defun f (p<sub>1</sub>...p<sub>n</sub>) e)
+
+于是
+
+```
+(defun subst (x y z)
+  (cond ((atom z)
+         (cond ((eq z y) x)
+               ('t z)))
+        ('t (cons (subst x y (car z))
+                  (subst x y (cdr z))))))
+```
+
+偶然地我们在这儿看到如何写cond表达式的缺省子句. 第一个元素是't的子句总 是会成功的. 于是
+
+`(cond (x y) ('t z))`
+
+等同于我们在某些语言中写的
+
+`if x then y else z`
+
+## 一些函数
+
 
 
 
