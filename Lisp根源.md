@@ -438,5 +438,76 @@ eval.的最后cond两个子句处理第一个元素是lambda或label的函数调
 
 随着时间的推移, 中级语言, 即被中间层程序员使用的语言, 正一致地向Lisp靠 近. 因此通过理解eval你正在明白将来的主流计算模式会是什么样.
 
+## 注释
+
+把约翰麦卡锡的记号翻译为代码的过程中我尽可能地少做改动. 我有过让代码 更容易阅读的念头, 但是我还是想保持原汁原味.
+在约翰麦卡锡的论文中,假用f来表示, 而不是空表. 我用空表表示假以使例子能 在Common Lisp中运行. (fixme)
+
+我略过了构造dotted pairs, 因为你不需要它来理解eval. 我也没有提apply, 虽然是apply(它的早期形式, 主要作用是引用自变量), 被约翰麦卡锡在1960年 称为普遍函数, eval只是不过是被apply调用的子程序来完成所有的工作.
+
+我定义了list和cxr等作为简记法因为麦卡锡就是这么做的. 实际上 cxr等可以 被定义为普通的函数. List也可以这样, 如果我们修改eval, 这很容易做到, 让 函数可以接受任意数目的自变量.
+
+麦卡锡的论文中只有五个原始操作符. 他使用了cond和quote,但可能把它们作 为他的元语言的一部分. 同样他也没有定义逻辑操作符and和not, 这不是个问题, 因为它们可以被定义成合适的函数.
+
+在eval.的定义中我们调用了其它函数如pair.和assoc.,但任何我们用原始操作 符定义的函数调用都可以用eval.来代替. 即
+
+`(assoc. (car e) a)`
+
+能写成
+
+```
+(eval. '((label assoc.
+                (lambda (x y)
+                  (cond ((eq (caar y) x) (cadar y))
+                        ('t (assoc. x (cdr y))))))
+         (car e)
+         a)
+        (cons (list 'e e) (cons (list 'a a) a)))
+```
+
+麦卡锡的eval有一个错误. 第16行是(相当于)(evlis. (cdr e) a)而不是(cdr e), 这使得自变量在一个有名函数的调用中被求值两次. 这显示当论文发表的时候, eval的这种描述还没有用IBM704机器语言实现. 它还证明了如果不去运行程序, 要保证不管多短的程序的正确性是多么困难.
+
+我还在麦卡锡的论文中碰到一个问题. 在定义了eval之后, 他继续给出了一些 更高级的函数--接受其它函数作为自变量的函数. 他定义了maplist:
+
+```
+(label maplist
+       (lambda (x f)
+         (cond ((null x) '())
+               ('t (cons (f x) (maplist (cdr x) f))))))
+ ```
+ 
+然后用它写了一个做微分的简单函数diff. 但是diff传给maplist一个用x做参 数的函数, 对它的引用被maplist中的参数x所捕获.6
+
+这是关于动态可视域危险性的雄辩证据, 即使是最早的更高级函数的例子也因为 它而出错. 可能麦卡锡在1960年还没有充分意识到动态可视域的含意. 动态可 视域令人惊异地在Lisp实现中存在了相当长的时间--直到Sussman和Steele于 1975年开发了Scheme. 词法可视域没使eval的定义复杂多少, 却使编译器更难 写了.
+
+##### The translation was initiated by Dai Yuwen on 2003-10-24 
+
+---
+
+### Footnotes
+
+... 欧几里德对几何的贡献.1
+
+Recursive Functions of Symbolic Expressions and Their Computation by Machine, Part1.  Communication of the ACM 3:4, April 1960, pp. 184-195.
+
+...当表达式以七个原始操作符中的五个开头时,它的自变量总是要求值的.2
+
+以另外两个操作符quote和cond开头的表达式以不同的方式求值. 当 quote表达式求值时, 它的自变量不被求值,而是作为整个表达式的值返回. 在 一个正确的cond表达式中, 只有L形路径上的子表达式会被求值.
+
+... 数.3
+逻辑上我们不需要为了这定义一个新的记号. 在现有的记号中用 一个叫做Y组合器的函数上的函数, 我们可以定义递归函数. 可能麦卡锡在写 这篇论文的时候还不知道Y组合器; 无论如何, label可读性更强.
+
+... 没有实际可用的数,4
+在麦卡锡的1960 年的Lisp中, 做算术是可能的, 比如用一个有n个原子的表表示数n.
+
+... 的艺术''的著名论文中描述了如何做到这点.5
+Guy Lewis Steele, Jr. and Gerald Jay Sussman, The Art of the Interpreter, or the Modularity Complex(Parts Zero,One,and Two),'' MIT AL Lab Memo 453, May 1978.
+
+... 对它的引用被maplist中的参数x所捕获.6
+
+当代的Lisp程序 员在这儿会用mapcar代替maplist. 这个例子解开了一个谜团: maplist为什 么会在Common Lisp中. 它是最早的映射函数, mapcar是后来增加的.
+
+
+
 
 
