@@ -2,8 +2,7 @@
 
 刚开始学Lisp的时候，走了一些弯路。 我试图从自己学过的语言里(象C或Perl) 找出Lisp中的对应物。 比如for循环的写法、do和while的写法，等等。 这其实陷 入了这种思维: Lisp只不过是另一种平常的语言，和其它语言不同的只是语法。 如果Lisp能做到的，C和Perl都能做到，学Lisp好象没有什么理由。 因此，了解了 Lisp的一些语法之后，一直没有什么长进。 直到我看到了`Paul Graham`的`On Lisp`和 `The roots of Lisp`， 才明白Lisp是一种多么奇特的语言。 我同时感到优 秀的书籍是多么可贵， 许多Lisp的书只是介绍一下语法， 没有把Lisp的实质点出来。
 
-我把`The roots of Lisp`翻译成了中文 。 本文的版权属于原著者Paul Graham。 
-您还可以下载ps文档， dvi文档，或TeX源文档。 欢迎寄patch给我。
+我把`The roots of Lisp`翻译成了中文 。 本文的版权属于原著者`Paul Graham`。 
 
 `Paul Graham`的另一本著作`Ansi Common Lisp`写得也非常 好，从仅能看到的头两章，我确信此书一定写得很精彩。 很遗憾国内没有译本或影印本。 我把此书的第一章和第二章也翻译成中文了。 注意本文的版权属于`Paul Graham`。 
 您还可以下载第一章的ps文档， 第一章的dvi文档，或第一章的TeX源文档。 
