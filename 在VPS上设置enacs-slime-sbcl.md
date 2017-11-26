@@ -47,6 +47,9 @@
 
 ## 安装sbcl, rlwrap, emacs, slime
 
+用'apt update' 和 'apt upgrade'更新。
+
+用'apt install sbcl'、 'apt install rlwrap'和 'apt install emacs'安装sbcl， rlwrap， emacs。
 
 
 
