@@ -61,6 +61,12 @@ apt install sbcl
 apt install rlwrap
 apt install emacs
 ```
+在~/.bashrc中增加下面语句：
+
+`alias sbcl='/usr/bin/rlwrap /usr/bin/sbcl'`
+
+(可以用`which sbcl` `which rlwrap`查看其位置)
+
 
 
 
