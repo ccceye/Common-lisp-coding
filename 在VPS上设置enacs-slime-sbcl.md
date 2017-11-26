@@ -1,5 +1,5 @@
 # 步骤
-and
+
 1. 购买VPS
 2. 在VPS上安装系统
 3. 启用BBR
@@ -17,7 +17,33 @@ and
 
 ## 启用BBR
 
-
+ **开启bbr**
+  ```
+  echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+  ```
+  _执行这个保存生效更改_
+  
+  `sysctl -p`
+  
+  **关闭bbr**
+  ```
+  sed -i '/net\.core\.default_qdisc=fq/d' /etc/sysctl.conf && sed -i '/net\.ipv4\.tcp_congestion_control=bbr/d' /etc/sysctl.conf
+  sysctl -p
+  ```
+  _执行完上面的代码，就使用reboot重启VPS后才能关闭bbr，重启后再用下面的查看bbr状态代码，查看是否关闭了。_
+  
+  `reboot`
+  
+  **查看bbr是否开启**
+  
+  执行下面命令，如果结果中有bbr，即证明你的内核已开启bbr.
+    
+   `sysctl net.ipv4.tcp_available_congestion_control`
+    
+  执行下面命令，看到有 tcp_bbr 模块，即说明bbr已启动.
+    
+   `lsmod | grep bbr`
 
 ## 安装sbcl, rlwrap, emacs, slime
 
