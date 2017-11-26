@@ -67,6 +67,7 @@ apt install emacs
 
 (可以用`which sbcl` `which rlwrap`查看其位置)
 
+#### 进入emacs ,修改~/.emacs.d/init.el，启用Slime
 
 
 
