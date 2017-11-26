@@ -54,14 +54,14 @@ apt update
 apt upgrade
 ```
 
-用下面命令安装sbcl， rlwrap， emacs：
+用下面命令安装sbcl， rlwrap， emacs：(sbcl = steel bank common lisp)
 
 ```
 apt install sbcl
 apt install rlwrap
 apt install emacs
 ```
-在~/.bashrc中增加下面语句：
+在~/.bashrc中增加下面语句,增强和改善sbcl行输入：
 
 `alias sbcl='/usr/bin/rlwrap /usr/bin/sbcl'`
 
