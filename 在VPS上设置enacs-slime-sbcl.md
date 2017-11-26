@@ -49,18 +49,19 @@
 
 用下面命令更新
 
-'''
+```
 apt update
 apt upgrade
-'''
+```
 
 用下面命令安装sbcl， rlwrap， emacs：
 
-'''
+```
 apt install sbcl
 apt install rlwrap
 apt install emacs
-'''
+```
+
 
 
 
