@@ -13,7 +13,10 @@ and
 
 很简单，在deploy new server时选择Debian 9x64,就好了。
 
+为SSH设置port: 在\etc\ssh\sshd_config中，增加或修改“Port 29000”(29000代换成自己的端口号).SSH默认port是22,一般不要用。
+
 ## 启用BBR
+
 
 
 ## 安装sbcl, rlwrap, emacs, slime
